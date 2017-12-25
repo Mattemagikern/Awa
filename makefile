@@ -1,7 +1,7 @@
 CC = gcc
 CflAGS = -Wall -g -pedantic -std=c99 
 LDFLAGS =
-OBJS = main.c linux_notify.c 
+OBJS = main.c notify.h
 OUT = awa
 
 all:
@@ -11,7 +11,7 @@ install:
 	ln -s $(shell pwd)/awa /usr/bin/awa
 
 list:
-	ps ax  | egrep ./a.out
+	ps ax  | egrep awa
 
 kill:
 	killall awa

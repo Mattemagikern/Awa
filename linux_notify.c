@@ -1,5 +1,8 @@
+#if __linux__
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include <unistd.h>
 
 int notify(char* head, char* message){
@@ -22,3 +25,4 @@ int notify(char* head, char* message){
 void ghost(bool debug){
         daemon(1,debug);
 }
+#endif
