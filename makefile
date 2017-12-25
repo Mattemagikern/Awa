@@ -1,7 +1,7 @@
 CC = gcc
 CflAGS = -Wall -g -pedantic -std=c99 
 LDFLAGS =
-OBJS = main.c 
+OBJS = main.c linux_notify.c 
 OUT = awa
 
 all:

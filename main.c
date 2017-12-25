@@ -1,25 +1,13 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#define DEBUG 0
 
-int notify(char* head, char* message){
-    char cwd[1024] = "";
-    char base[20] = "notify-send -i";
-    char path[1024]; 
-    if (getcwd(cwd, sizeof(cwd)) != NULL){
-        sprintf(cwd, "/proc/%d/exe", getpid());
-        readlink(cwd, cwd, 1024);
-        strcpy((cwd + strlen(cwd) - 4), "/awa.png");
-        sprintf(path, "%s %s \"%s\" \"%s\"", base, cwd, head ,message);
-        system(path);
-    }else{
-        perror("getcwd() error");
-        return 1;
-    }
-    return 0;
-}
+#if __linux__
+#include "linux_notify.c"
+#elif __APPLE__
+#include "mac_notify.c"
+#endif
+
+#define DEBUG 0
 
 int check_status(){
     FILE* fp;
@@ -36,7 +24,7 @@ int check_status(){
     }
 
     while (1) {
-        char message[2048];
+        char message[1024];
         if(!system("git fetch --all")){
             if(fp = popen("git log -n 1", "r"), fp != NULL){
                 while(fgets(output, sizeof(output)-1, fp) != NULL) {
@@ -133,7 +121,7 @@ int main(int argc, char const* argv[]){
         char buf[1024];
         char path[50];
         char* home;
-        daemon(1,DEBUG);
+        ghost(DEBUG);
         if (home = getenv("HOME"), home != NULL) {
             snprintf(path, sizeof(path), "%s%s", home, "/.awa");
             if (fp = fopen(path,"r"), fp != NULL){

@@ -1,0 +1,29 @@
+Main:
+Spawns processes in git repositories. 
+- Server?
+
+process:
+- checks status of a project, gives popups .
+Modules:
+- Popup
+- git checker
+- Server?
+- Git
+
+
+[Git]
+place: 
+branch: 
+intervall:
+
+
+[P4]
+place:
+branch:
+intervall:
+
+
+notify-send -i ~/Documents/awa/bin/awa.png "hello" "`git status` "
+
+import platform
+platform.system() == Linux
