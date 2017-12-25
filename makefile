@@ -1,7 +1,7 @@
 CC = gcc
-CflAGS = -Wall -g -pedantic -std=c99 
+CflAGS = -g3 -pedantic -std=c99 
 LDFLAGS =
-OBJS = main.c notify.h
+OBJS = main.c notify.h 
 OUT = awa
 
 all:

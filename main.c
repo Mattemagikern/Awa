@@ -3,17 +3,17 @@
 #include <string.h>
 #include "notify.h"
 
-#define DEBUG 0
+#define DEBUG 1
 int check_status(){
     FILE* fp;
     char output[1024];
     char last_commit[256] = "";
     char commit[256];
 
-    if(fp = popen("git log -n 1", "r"), fp != NULL){
+    if(fp = popen("git rev-parse HEAD", "r"), fp != NULL){
         while (fgets(output, sizeof(output)-1, fp) != NULL) {
-            if(strstr(output,"commit"))
-                strcpy(last_commit, (output + 7));
+            strcpy(last_commit, (output + 7));
+            printf("%s\n", last_commit);
         }
         pclose(fp);
     }
@@ -43,10 +43,28 @@ int check_status(){
         sleep(2);
     }
 }
+int get_status(){
+    FILE* fp;
+    char output[1024];
+    char message[2048] = "";
+    if(fp = popen("git branch -vv", "r"), fp != NULL){
+        while(fgets(output, sizeof(output)-1, fp) != NULL) {
+            strcat(message,output);
+        }
+        fclose(fp);
+        if(notify("Hello, I'm Awa", "I'll keep you posted!"))
+            printf("notify error\n");
+        printf("message:%s\n",message);
+        notify("Summary!", message);
+        memset(message, 0, sizeof(message));
+    }else{
+        printf("error get_status\n");
+    }
+}
 
 void* watch(char* path){
     if(!chdir(path)){
-        notify("Hello, I'm Awa", "I'll keep you posted!");
+        get_status();
         if(check_status())
             printf("check_status: error\n");
     }else{
@@ -116,12 +134,14 @@ int main(int argc, char const* argv[]){
         char buf[1024];
         char path[50];
         char* home;
-        ghost(DEBUG);
+        //ghost(DEBUG);
         if (home = getenv("HOME"), home != NULL) {
             snprintf(path, sizeof(path), "%s%s", home, "/.awa");
+            printf("path:%s\n", path);
             if (fp = fopen(path,"r"), fp != NULL){
                 while(fgets(buf, sizeof(buf), fp) != NULL){
                     if (strstr(buf,"path")) {
+                        printf("%s\n", buf);
                         buf[strlen(buf)-1] = 0;
                         watch(buf + 5);
                     }
