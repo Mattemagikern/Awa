@@ -3,7 +3,7 @@
 #include <string.h>
 #include "notify.h"
 
-#define DEBUG 1
+#define DEBUG 0
 int check_status(){
     FILE* fp;
     char output[1024];
