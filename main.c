@@ -71,29 +71,86 @@ void* watch(char* path){
     }
 }
 
-int main(int argc, char const* argv[])
-{
+void add_watcher(char* new_path){
     FILE* fp;
     char buf[1024];
-    char path[50];
+    char* home;
+    char path[1024];
+    if (home = getenv("HOME"), home != NULL) {
+        snprintf(path, sizeof(path), "%s%s", home, "/.awa");
+        if (fp = fopen(path,"a"), fp != NULL){
+            fprintf(fp, "path %s\n", new_path);
+        }else{
+            printf("Could not open ~/.awa , exits\n");
+        }
+    }else{
+        printf("Could not find home\n");
+    }
+}
+
+void remove_watcher(const char* new_path){
+    FILE* fp;
+    FILE* fpnew;
+    char buf[1024];
+    char path[1024];
+    char temp[1024];
     char* home;
     if (home = getenv("HOME"), home != NULL) {
         snprintf(path, sizeof(path), "%s%s", home, "/.awa");
-        if (fp = fopen(path,"r"), fp != NULL){
+        snprintf(temp, sizeof(temp), "%s%s", home, "/.temp");
+        if ((fp = fopen(path,"rw"), fp != NULL) && 
+                (fpnew = fopen(temp,"ab+"), fpnew != NULL )){
             while(fgets(buf, sizeof(buf), fp) != NULL){
-                if (strstr(buf,"path")) {
-                    daemon(1,DEBUG);
-                    buf[strlen(buf)-1] = 0;
-                    watch(buf + 5);
-                }
+                if(strstr(buf, new_path) == NULL)
+                    fprintf(fpnew, "%s", buf);
             }
+            fclose(fp);
+            fclose(fpnew);
+            if(rename(strcat(home,"/.temp"),path))
+                printf("error renaming\n");
         }else{
             printf("Could not open ~/.awa , exits\n");
-            return 1;
+            exit(1);
         }
     }else{
         printf("couldn't locate your home directory\n");
-        return 1;
+        exit(1);
+    }
+}
+
+int main(int argc, char const* argv[]){
+    if (argc > 1) {
+        if (!strcmp(argv[1],"kill")) {
+            //need a better solution to the kill command. 
+            system("killall awa");
+        } else if (!strcmp(argv[1],"add")) {
+            add_watcher((char*) argv[2]);
+        } else if (!strcmp(argv[1],"remove")) {
+            remove_watcher((char*) argv[2]);
+        }
+    } else {
+        FILE* fp;
+        char buf[1024];
+        char path[50];
+        char* home;
+        daemon(1,DEBUG);
+        if (home = getenv("HOME"), home != NULL) {
+            snprintf(path, sizeof(path), "%s%s", home, "/.awa");
+            if (fp = fopen(path,"r"), fp != NULL){
+                while(fgets(buf, sizeof(buf), fp) != NULL){
+                    if (strstr(buf,"path")) {
+                        buf[strlen(buf)-1] = 0;
+                        watch(buf + 5);
+                    }
+                }
+            }else{
+                printf("Could not open ~/.awa , exits\n");
+                return 1;
+            }
+        }else{
+            printf("couldn't locate your home directory\n");
+            return 1;
+        }
     }
     return 0;
 }
