@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include "notify.h"
 
 int notify(char* head, char* message){
     char cwd[1024];

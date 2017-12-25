@@ -1,14 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
-
-#if __linux__
-#include "linux_notify.c"
-#elif __APPLE__
-#include "mac_notify.c"
-#endif
+#include "notify.h"
 
 #define DEBUG 0
-
 int check_status(){
     FILE* fp;
     char output[1024];
