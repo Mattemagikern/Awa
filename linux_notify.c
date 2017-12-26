@@ -11,9 +11,8 @@ void trim_spaces(char *str){
     char* dest = str;
     do 
         while(isspace(*str) && isspace(*(str + 1)))
-            str++;
+            str++; 
     while(*dest++ = *str++);
-    *dest++ = "\0";
 }
 /*
  * Sends a notify using the linux notify-send.
@@ -23,7 +22,7 @@ int notify(char* head, char* message){
     char cwd[1024]="";
     char base[20] = "notify-send -i";
     char path[1024]="";
-    trim_spaces(message);
+    trim_spaces("hello   I");
     if (getcwd(cwd, sizeof(cwd)) != NULL){
         //sprintf(cwd, "/proc/%d/exe", getpid());
         //readlink(cwd, cwd, 1024);
