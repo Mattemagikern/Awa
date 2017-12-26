@@ -25,6 +25,6 @@ It will generate the executable and create a symbolic link to the executable gen
 
 
 # ToDo
-* Make it work across posix
+* Make it work across linux/mac
 * Allow for more options for the wacher
 * Allow for more SCM tools than git. 
