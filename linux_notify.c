@@ -8,17 +8,17 @@
  * Trims white spaces in string
  */
 void trim_spaces(char *str){
-    char dest* = str;  /* Destination to copy to */
+    char* dest = str;  /* Destination to copy to */
     while (*str != '\0'){
-        while(isspace(*str) && isspace(*(str + 1)))
+        while (isspace(*str) && isspace(*(str + 1)))
             str++;  /* Just skip to next character */
-
         *dest++ = *str++;
     }
     *dest = '\0';
 }
 /*
  * Sends a notify using the linux notify-send.
+ * Assumes the function was called from this project root. 
  */
 int notify(char* head, char* message){
     char cwd[1024]="";
