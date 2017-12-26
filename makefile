@@ -1,5 +1,5 @@
 CC = gcc
-CflAGS = -g -pedantic -std=c99 
+CFLAGS = -Wall -pedantic -std=c99 -g
 LDFLAGS = lpthreads
 OBJS = main.c notify.h 
 OUT = awa
