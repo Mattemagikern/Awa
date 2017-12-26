@@ -3,7 +3,8 @@ Spawns processes in git repositories.
 - Server?
 
 process:
-- checks status of a project, gives popups .
+- checks status of a project, gives popups.
+
 Modules:
 - Popup
 - git checker

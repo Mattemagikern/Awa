@@ -48,10 +48,14 @@ int get_status(){
     FILE* fp;
     char output[50];
     char message[1024] = "";
+    char* substr;
     if(fp = popen("git branch -vv", "r"), fp != NULL){
         while(fgets(output, sizeof(output)-1, fp) != NULL) {
-            if (strstr(output,"]"))
+            if ((substr = strstr(output,"]"))){
+                output[strlen(output) - strlen(substr) + 1] = 0;
+                strcat(output,"\n");
                 strcat(message,output);
+            }
         }
         fclose(fp);
         char str[25] = "I'll keep you posted!";
