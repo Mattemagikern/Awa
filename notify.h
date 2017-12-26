@@ -2,6 +2,7 @@
 #define NOTIFY_H
 #include <stdbool.h>
 #include <stdio.h>
+#include <ctype.h>
 #if __linux__
 #include "linux_notify.c"
 #elif __APPLE__

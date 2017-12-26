@@ -1,32 +1,31 @@
+#define _BSD_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "notify.h"
 
-#define DEBUG 0
+#define DEBUG 1
 int check_status(){
     FILE* fp;
-    char output[1024];
+    char output[50];
     char last_commit[256] = "";
     char commit[256];
+    char message[1024] = "";
 
-    if(fp = popen("git log -n 1", "r"), fp != NULL){
-        while (fgets(output, sizeof(output)-1, fp) != NULL) {
-            if(strstr(output,"commit"))
-                strcpy(last_commit, (output + 7));
-        }
+    if(fp = popen("git rev-parse HEAD", "r"), fp != NULL){
+        while (fgets(output, sizeof(output)-1, fp) != NULL)
+            strcpy(last_commit, (output + 7));
         pclose(fp);
     }
 
     while (1) {
-        char message[1024];
         if(!system("git fetch --all")){
             if(fp = popen("git log -n 1", "r"), fp != NULL){
                 while(fgets(output, sizeof(output)-1, fp) != NULL) {
                     if(strstr(output,"commit"))
                         strcpy(commit, (output + 7));
                     else if(strstr(output,"Date"))
-                        strncat(message, output,strlen(output) - 7);
+                        strncat(message, output, strlen(output) - 7);
                     else
                         strcat(message,output);
                 }
@@ -40,23 +39,45 @@ int check_status(){
             }
         }
         memset(message, 0, sizeof(message));
+        memset(output, 0, sizeof(output));
         sleep(2);
     }
 }
 
+int get_status(){
+    FILE* fp;
+    char output[50];
+    char message[1024] = "";
+    if(fp = popen("git branch -vv", "r"), fp != NULL){
+        while(fgets(output, sizeof(output)-1, fp) != NULL) {
+            if (strstr(output,"]"))
+                strcat(message,output);
+        }
+        fclose(fp);
+        char str[25] = "I'll keep you posted!";
+        if(notify("Hello, I'm Awa", str))
+            printf("notify error\n");
+        notify("Summary!", message);
+    }else{
+        printf("error get_status\n");
+        return 1;
+    }
+    return 0;
+}
+
 void* watch(char* path){
     if(!chdir(path)){
-        notify("Hello, I'm Awa", "I'll keep you posted!");
+        get_status();
         if(check_status())
             printf("check_status: error\n");
     }else{
         printf("error changing dir\n");
     }
+    return NULL;
 }
 
 void add_watcher(char* new_path){
     FILE* fp;
-    char buf[1024];
     char* home;
     char path[1024];
     if (home = getenv("HOME"), home != NULL) {
@@ -116,12 +137,14 @@ int main(int argc, char const* argv[]){
         char buf[1024];
         char path[50];
         char* home;
-        ghost(DEBUG);
+        //ghost(DEBUG);
         if (home = getenv("HOME"), home != NULL) {
             snprintf(path, sizeof(path), "%s%s", home, "/.awa");
+            printf("path:%s\n", path);
             if (fp = fopen(path,"r"), fp != NULL){
                 while(fgets(buf, sizeof(buf), fp) != NULL){
                     if (strstr(buf,"path")) {
+                        printf("%s\n", buf);
                         buf[strlen(buf)-1] = 0;
                         watch(buf + 5);
                     }
