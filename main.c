@@ -4,7 +4,7 @@
 #include <string.h>
 #include "notify.h"
 
-#define DEBUG 1
+#define DEBUG 0
 int check_status(){
     FILE* fp;
     char output[50];
@@ -20,7 +20,7 @@ int check_status(){
 
     while (1) {
         if(!system("git fetch --all")){
-            if(fp = popen("git log -n 1", "r"), fp != NULL){
+            if(fp = popen("git log -n 1 ..origin/master", "r"), fp != NULL){
                 while(fgets(output, sizeof(output)-1, fp) != NULL) {
                     if(strstr(output,"commit"))
                         strcpy(commit, (output + 7));
@@ -40,7 +40,7 @@ int check_status(){
         }
         memset(message, 0, sizeof(message));
         memset(output, 0, sizeof(output));
-        sleep(2);
+        sleep(5);
     }
 }
 
@@ -141,14 +141,12 @@ int main(int argc, char const* argv[]){
         char buf[1024];
         char path[50];
         char* home;
-        //ghost(DEBUG);
+        ghost(DEBUG);
         if (home = getenv("HOME"), home != NULL) {
             snprintf(path, sizeof(path), "%s%s", home, "/.awa");
-            printf("path:%s\n", path);
             if (fp = fopen(path,"r"), fp != NULL){
                 while(fgets(buf, sizeof(buf), fp) != NULL){
                     if (strstr(buf,"path")) {
-                        printf("%s\n", buf);
                         buf[strlen(buf)-1] = 0;
                         watch(buf + 5);
                     }

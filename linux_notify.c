@@ -27,15 +27,13 @@ int notify(char* head, char* message){
     char base[20] = "notify-send -i";
     char path[1024] = "";
     trim_spaces(message);
-    if (getcwd(cwd, sizeof(cwd)) != NULL){
-        //sprintf(cwd, "/proc/%d/exe", getpid());
-        //readlink(cwd, cwd, 1024);
-        //strcpy((cwd + strlen(cwd) - strlen(__FILE__)), "/awa.png");
-        strcat(cwd,"/awa.png");
+    if (sprintf(cwd, "/proc/%d/exe", getpid()) > -1){
+        readlink(cwd, cwd, 1024);
+        strcpy((cwd + strlen(cwd) - 4), "/awa.png");
         sprintf(path, "%s %s \"%s\" \"%s\"", base, cwd, head ,message);
         system(path);
     }else{
-        perror("getcwd() error");
+        perror("sprintf /proc/ error");
         return 1;
     }
     return 0;
