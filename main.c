@@ -2,7 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include "notify.h"
+#include "log.h"
 
 #define DEBUG 0
 int check_status(){
@@ -20,7 +22,7 @@ int check_status(){
 
     while (1) {
         if(!system("git fetch --all")){
-            if(fp = popen("git log -n 1 ..origin/master", "r"), fp != NULL){
+            if(fp = popen("git log -n 1 ..origin", "r"), fp != NULL){
                 while(fgets(output, sizeof(output)-1, fp) != NULL) {
                     if(strstr(output,"commit"))
                         strcpy(commit, (output + 7));
@@ -31,6 +33,7 @@ int check_status(){
                 }
                 if(strcmp(commit, last_commit)){
                     notify("New commit!",message);
+                    write_to_log("New commit!", message);
                     strcpy(last_commit, commit);
                 }
                 pclose(fp);
@@ -40,7 +43,10 @@ int check_status(){
         }
         memset(message, 0, sizeof(message));
         memset(output, 0, sizeof(output));
-        sleep(5);
+        struct timespec ts;
+        ts.tv_sec = 5;
+        ts.tv_nsec = 0;
+        nanosleep(&ts, NULL);
     }
 }
 
@@ -49,6 +55,7 @@ int get_status(){
     char output[50];
     char message[1024] = "";
     char* substr;
+
     if(fp = popen("git branch -vv", "r"), fp != NULL){
         while(fgets(output, sizeof(output)-1, fp) != NULL) {
             if ((substr = strstr(output,"]"))){
@@ -57,6 +64,7 @@ int get_status(){
                 strcat(message,output);
             }
         }
+
         fclose(fp);
         char str[25] = "I'll keep you posted!";
         if(notify("Hello, I'm Awa", str))
@@ -88,6 +96,7 @@ void add_watcher(char* new_path){
         snprintf(path, sizeof(path), "%s%s", home, "/.awa");
         if (fp = fopen(path,"a"), fp != NULL){
             fprintf(fp, "path %s\n", new_path);
+            watch(new_path);
         }else{
             printf("Could not open ~/.awa , exits\n");
         }
@@ -128,6 +137,8 @@ void remove_watcher(const char* new_path){
 
 int main(int argc, char const* argv[]){
     if (argc > 1) {
+        char* ptr;
+        int n = -1;
         if (!strcmp(argv[1],"kill")) {
             //need a better solution to the kill command. 
             system("killall awa");
@@ -135,6 +146,11 @@ int main(int argc, char const* argv[]){
             add_watcher((char*) argv[2]);
         } else if (!strcmp(argv[1],"remove")) {
             remove_watcher((char*) argv[2]);
+        }else if(!strcmp(argv[1],"log")){
+            if (argc  > 3 && (ptr = strstr(argv[2],"-n"))){
+                n = atoi(argv[3]);
+            }
+            print_log(n);
         }
     } else {
         FILE* fp;
@@ -144,6 +160,9 @@ int main(int argc, char const* argv[]){
         ghost(DEBUG);
         if (home = getenv("HOME"), home != NULL) {
             snprintf(path, sizeof(path), "%s%s", home, "/.awa");
+            snprintf(buf, sizeof(buf), "%s%s", home, "/.awa_log");
+            fp = fopen(buf, "w+");
+            fclose(fp);
             if (fp = fopen(path,"r"), fp != NULL){
                 while(fgets(buf, sizeof(buf), fp) != NULL){
                     if (strstr(buf,"path")) {
