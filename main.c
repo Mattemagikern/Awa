@@ -3,16 +3,18 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <pthread.h>
 #include "notify.h"
 #include "log.h"
 
 #define DEBUG 0
-int check_status(){
+int check_status(char* path){
     FILE* fp;
     char output[50];
     char last_commit[256] = "";
-    char commit[256];
+    char commit[256]= "";
     char message[1024] = "";
+    char head[100] = "New commit in ";
 
     if(fp = popen("git rev-parse HEAD", "r"), fp != NULL){
         while (fgets(output, sizeof(output)-1, fp) != NULL)
@@ -31,9 +33,10 @@ int check_status(){
                     else
                         strcat(message,output);
                 }
-                if(strcmp(commit, last_commit)){
-                    notify("New commit!",message);
-                    write_to_log("New commit!", message);
+                if(strlen(commit) > 0 && strcmp(commit, last_commit)){
+                    snprintf(head, sizeof(head), "%s %s!", "New commit in", path);
+                    notify(head, message);
+                    write_to_log(head, message);
                     strcpy(last_commit, commit);
                 }
                 pclose(fp);
@@ -42,7 +45,6 @@ int check_status(){
             }
         }
         memset(message, 0, sizeof(message));
-        memset(output, 0, sizeof(output));
         struct timespec ts;
         ts.tv_sec = 5;
         ts.tv_nsec = 0;
@@ -50,7 +52,7 @@ int check_status(){
     }
 }
 
-int get_status(){
+int get_status(char* name){
     FILE* fp;
     char output[50];
     char message[1024] = "";
@@ -66,10 +68,8 @@ int get_status(){
         }
 
         fclose(fp);
-        char str[25] = "I'll keep you posted!";
-        if(notify("Hello, I'm Awa", str))
-            printf("notify error\n");
-        notify("Summary!", message);
+        notify(name, message);
+        write_to_log("Summary for: ", message);
     }else{
         printf("error get_status\n");
         return 1;
@@ -77,10 +77,12 @@ int get_status(){
     return 0;
 }
 
-void* watch(char* path){
-    if(!chdir(path)){
-        get_status();
-        if(check_status())
+void* watch(void* path){
+    char name[100] = "";
+    if(!chdir((char*) path)){
+        strcat(name,strrchr(path,(int)'/') + 1);
+        get_status(name);
+        if(check_status(name))
             printf("check_status: error\n");
     }else{
         printf("error changing dir\n");
@@ -157,19 +159,32 @@ int main(int argc, char const* argv[]){
         char buf[1024];
         char path[50];
         char* home;
-        ghost(DEBUG);
+        //ghost(DEBUG);
         if (home = getenv("HOME"), home != NULL) {
             snprintf(path, sizeof(path), "%s%s", home, "/.awa");
             snprintf(buf, sizeof(buf), "%s%s", home, "/.awa_log");
             fp = fopen(buf, "w+");
             fclose(fp);
+
+            char str[25] = "I'll keep you posted!";
+            if(notify("Hello, I'm Awa", str))
+                printf("notify error\n");
+
             if (fp = fopen(path,"r"), fp != NULL){
                 while(fgets(buf, sizeof(buf), fp) != NULL){
                     if (strstr(buf,"path")) {
+                        //This will create data_races between the watchers.
+                        //They will change to the same dir and stay there.
+                        //Need a solution. In which we might write to the same
+                        //file and have the processes in different dir. 
+                        pthread_t thread;
                         buf[strlen(buf)-1] = 0;
-                        watch(buf + 5);
+                        pthread_create(&thread, NULL, watch , buf + 5);
+                        pthread_detach(thread);
                     }
                 }
+                fclose(fp);
+                while(1);
             }else{
                 printf("Could not open ~/.awa , exits\n");
                 return 1;
