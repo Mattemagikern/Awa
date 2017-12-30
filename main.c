@@ -22,7 +22,7 @@ int check_status(){
 
     while (1) {
         if(!system("git fetch --all")){
-            if(fp = popen("git log -n 1 ..origin/master", "r"), fp != NULL){
+            if(fp = popen("git log -n 1 ..origin", "r"), fp != NULL){
                 while(fgets(output, sizeof(output)-1, fp) != NULL) {
                     if(strstr(output,"commit"))
                         strcpy(commit, (output + 7));
@@ -96,6 +96,7 @@ void add_watcher(char* new_path){
         snprintf(path, sizeof(path), "%s%s", home, "/.awa");
         if (fp = fopen(path,"a"), fp != NULL){
             fprintf(fp, "path %s\n", new_path);
+            watch(new_path);
         }else{
             printf("Could not open ~/.awa , exits\n");
         }
