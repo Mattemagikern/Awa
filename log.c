@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 /*
  * Writes a message to .awa_log. 
  */
@@ -11,7 +10,6 @@ int write_to_log(char* head, char* message){
     char* home;
     if (home = getenv("HOME"), home != NULL) {
         snprintf(path, sizeof(path), "%s%s", home, "/.awa_log");
-        pthread_mutex_lock(&mutex);
         if ((fp = fopen(path,"a"))){
             fprintf(fp, "------------\n");
             fprintf(fp, "%s\n",head);
@@ -19,15 +17,12 @@ int write_to_log(char* head, char* message){
             fclose(fp);
         }else{
             printf("Could not open ~/.awa\n");
-            pthread_mutex_unlock(&mutex);
             return 1;
         }
     }else{
-        pthread_mutex_unlock(&mutex);
         printf("Could not locate Home\n");
         return 1;
     }
-    pthread_mutex_unlock(&mutex);
     return 0;
 }
 
@@ -42,7 +37,6 @@ int print_log(int n){
     if (n == 0) return 0;
     if (home = getenv("HOME"), home != NULL) {
         snprintf(path, sizeof(path), "%s%s", home, "/.awa_log");
-        pthread_mutex_lock(&mutex);
         if ((fp = fopen(path,"r"), fp != NULL)){
             FILE* fp_find = fopen(path, "r");
             int i = 0;
@@ -62,15 +56,12 @@ int print_log(int n){
                     n --; 
             }
             fclose(fp);
-            pthread_mutex_unlock(&mutex);
         }else{
             printf("couldn't read .awa_log\n");
-            pthread_mutex_unlock(&mutex);
             return 1;
         }
     }else{
         printf("couldn't locate your home folder\n");
-        pthread_mutex_unlock(&mutex);
         return 1;
     }
     return 0;
