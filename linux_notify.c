@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <ctype.h>
 #include <unistd.h>
 
 /*
@@ -30,7 +31,7 @@ int notify(char* head, char* message){
     if (sprintf(cwd, "/proc/%d/exe", getpid()) > -1){
         readlink(cwd, cwd, 1024);
         strcpy((cwd + strlen(cwd) - 4), "/awa.png");
-        sprintf(path, "%s %s \"%s\" \"%s\"", base, cwd, head ,message);
+        sprintf(path, "%s %s \"%s\" \"%s\" --urgency=critical", base, cwd, head ,message);
         system(path);
     }else{
         perror("sprintf /proc/ error");
