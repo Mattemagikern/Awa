@@ -19,7 +19,7 @@ It will generate the executable and create a symbolic link to the executable gen
 
 # Features
 
-* awa add <path> <branch> -- <path> needs to be an absolute path, <branch> defualts to origin/master
-* awa remove <path> 
+* awa add \<path\> \<branch\> -- \<path\> needs to be an absolute path, \<branch\> defualts to origin/master
+* awa remove \<path\> 
 * awa log -- prints all logg messages since the start of the program. 
-* awa log -n <nbr> -- prints the <nbr> last logg messages. 
+* awa log -n \<nbr\> -- prints the \<nbr\> last logg messages. 
