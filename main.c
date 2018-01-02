@@ -204,7 +204,8 @@ int main(int argc, char const* argv[]){
                     memset(buf,0, sizeof(buf));
                 }
                 fclose(fp);
-                while(1);
+                if(b)
+                    while(1);
             }else{
                 printf("Could not open ~/.awa , exits\n");
                 notify("Godbye!",errormsg);
