@@ -4,11 +4,12 @@ LDFLAGS =
 OBJS = main.c notify.h log.h
 OUT = awa
 
+INSTALL_PATH?=/usr/local/bin
+
 all:
 	$(CC) $(CFLAGS) $(OBJS) -o $(OUT) 
-install:
-	
-	ln -sf $(shell pwd)/awa /usr/bin/awa
+install:all
+	mv $(OUT) $(INSTALL_PATH)
 
 list:
 	ps ax  | egrep awa
